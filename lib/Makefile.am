@@ -76,6 +76,23 @@ CLEANFILES = $(defexec_DATA)
 libidn-$(DLL_VERSION).def: libidn.la
 endif
 
+######## libstringprep ########
+lib_LTLIBRARIES += libstringprep.la
+libstringprep_la_SOURCES =  stringprep.c stringprep.h profiles.c nfkc.c version.c
+if TLD
+libstringprep_la_SOURCES += tld.h tld.c tlds.c
+endif
+# libstringprep_la_CPPFLAGS = $(libidn_la_CPPFLAGS)
+libstringprep_la_LIBADD =  gl/libgnu.la
+libstringprep_la_LDFLAGS = $(libidn_la_LDFLAGS)
+### Test linking ###
+noinst_PROGRAMS = test_linking_stringprep
+test_linking_stringprep_SOURCES = test_linking_stringprep.c
+#test_linking_stringprep_CPPFLAGS = -I$(top_srcdir)/include/wget -I$(top_builddir)/include/wget
+test_linking_stringprep_LDADD = libstringprep.la
+test_linking_stringprep_LDFLAGS = -static -no-install
+########
+
 SPEC = $(top_srcdir)/doc/specifications
 
 #nfkc.c: gunibreak.h gunicomp.h gunidecomp.h
