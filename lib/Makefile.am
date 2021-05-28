@@ -1,122 +1,89 @@
-# Copyright (C) 2011-2021 Simon Josefsson
-
+## Process this file with automake to produce Makefile.in
+# Copyright (C) 2002-2021 Simon Josefsson.
+# Copyright (C) 2004-2021 Free Software Foundation, Inc.
+#
+# This file is part of GNU Libidn.
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-AM_CPPFLAGS =
+EXTRA_DIST = gen-stringprep-tables.pl gen-unicode-tables.pl gen-tld-tables.pl
 
-AM_CPPFLAGS += -DIDN2_BUILDING -DSRCDIR=\"$(srcdir)\"
-AM_CPPFLAGS += -I$(top_builddir)/gl -I$(top_srcdir)/gl
-AM_CFLAGS = $(WARN_CFLAGS)
-AM_CFLAGS += $(CFLAG_VISIBILITY) $(CODE_COVERAGE_CFLAGS)
+AM_CPPFLAGS = -I$(srcdir)/gl -Igl -DLIBIDN_BUILDING
+AM_CPPFLAGS += -DLOCALEDIR=\"$(localedir)\"
+AM_CFLAGS = $(WSTACK_CFLAGS) $(WARN_CFLAGS)
+AM_CFLAGS += $(CFLAG_VISIBILITY)
 
-if !HAVE_LIBUNISTRING
-AM_CPPFLAGS += -I$(top_srcdir)/unistring/ -I$(top_builddir)/unistring/
+lib_LTLIBRARIES = libidn.la
+
+idn_int = idn-int.h
+
+BUILT_SOURCES = $(idn_int) gunibreak.h gunicomp.h gunidecomp.h rfc3454.c rfc3454.h tlds.c
+DISTCLEANFILES = $(idn_int)
+include_HEADERS = stringprep.h idna.h punycode.h idn-free.h pr29.h
+if TLD
+include_HEADERS += tld.h
 endif
+nodist_include_HEADERS = $(idn_int)
 
-lib_LTLIBRARIES = libidn2.la
+idn-int.h:
+	if test -n "$(STDINT_H)"; then \
+		sed -e s/include_next/include/ gl/stdint.h > idn-int.h; \
+	else \
+		echo '#include <stdint.h>' > idn-int.h; \
+	fi
 
-include_HEADERS = idn2.h
+libidn_la_SOURCES = libidn.map \
+	gunibreak.h gunicomp.h gunidecomp.h \
+	nfkc.c toutf8.c version.c \
+	stringprep.h stringprep.c rfc3454.c rfc3454.h profiles.c \
+	punycode.h punycode.c \
+	idna.h idna.c \
+	pr29.h pr29.c \
+	idn-free.h idn-free.c \
+	strerror-idna.c strerror-pr29.c strerror-punycode.c \
+	strerror-stringprep.c strerror-tld.c
 
-libidn2_la_SOURCES = idn2.map idn2.h
-libidn2_la_SOURCES += idna.h idna.c
-libidn2_la_SOURCES += lookup.c decode.c
-libidn2_la_SOURCES += register.c
-libidn2_la_SOURCES += bidi.h bidi.c
-libidn2_la_SOURCES += version.c
-libidn2_la_SOURCES += error.c
-libidn2_la_SOURCES += punycode.h puny_encode.c puny_decode.c
-libidn2_la_SOURCES += free.c
-libidn2_la_SOURCES += data.h data.c
-libidn2_la_SOURCES += tr46map.h tr46map.c
-libidn2_la_SOURCES += tables.h tables.c
-libidn2_la_SOURCES += context.h context.c
-
-libidn2_la_LIBADD = $(LTLIBICONV) $(LTLIBINTL)
-if HAVE_LIBUNISTRING
-libidn2_la_LIBADD += $(LTLIBUNISTRING)
-else
-libidn2_la_LIBADD += ../unistring/libunistring.la
+if TLD
+libidn_la_SOURCES += tld.h tld.c tlds.c
 endif
-libidn2_la_LIBADD += ../gl/libgnu.la
-
-libidn2_la_LDFLAGS = -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
-	-no-undefined
-libidn2_la_LDFLAGS += $(CODE_COVERAGE_LDFLAGS)
-
-IDNA_TABLE = idna-tables-properties.csv
-IANA_URL = https://www.iana.org/assignments/idna-tables-11.0.0/idna-tables-properties.csv
-IDNA_TABLE_SHA1 = 1ed1ecc53e4c1458b58ba4dbec49c553f4779a7a
-
-TR46MAP = IdnaMappingTable.txt
-TR46MAP_URL = http://www.unicode.org/Public/idna/11.0.0/IdnaMappingTable.txt
-TR46MAP_SHA1 = 9892c962ce97db7b7151427df675bd1ebd0eeb99
-
-NFCQC = DerivedNormalizationProps.txt
-NFCQC_URL = http://www.unicode.org/Public/11.0.0/ucd/DerivedNormalizationProps.txt
-NFCQC_SHA1 = 4b1620b7a54ed761720345b5367932d5a029a279
-
-BUILT_SOURCES = data.c tr46map_data.c
-DISTCLEANFILES = $(BUILT_SOURCES)
-CLEANFILES = gendata$(EXEEXT) gentr46map$(EXEEXT)
-MAINTAINERCLEANFILES = $(IDNA_TABLE) $(TR46MAP) $(NFCQC)
-EXTRA_DIST = $(IDNA_TABLE) $(TR46MAP) $(NFCQC) data.c gendata.c tr46map_data.c gentr46map.c
-
-gendata$(EXEEXT): gendata.c
-	$(CC) $(AM_CPPFLAGS) $(CFLAGS) $< -o $@
-data.c: $(srcdir)/gendata.c $(IDNA_TABLE)
-	$(MAKE) gendata$(EXEEXT)
-	$(builddir)/gendata$(EXEEXT) < $(IDNA_TABLE) > $@.new
-	mv $@.new $@
-
-gentr46map$(EXEEXT): gentr46map.c
-	$(CC) $(AM_CPPFLAGS) $(CFLAGS) $< -o $@
-tr46map_data.c: $(srcdir)/gentr46map.c $(TR46MAP) $(NFCQC)
-	$(MAKE) gentr46map$(EXEEXT)
-	$(builddir)/gentr46map$(EXEEXT) > $@.new
-	mv $@.new $@
-
-$(IDNA_TABLE):
-	if ! echo "$(IDNA_TABLE_SHA1) $(IDNA_TABLE)" | sha1sum -c -; then \
-	  rm -f $(IDNA_TABLE); \
-	  wget -O$(IDNA_TABLE) $(IANA_URL); \
-	  echo "$(IDNA_TABLE_SHA1) $(IDNA_TABLE)" | sha1sum -c -; \
-	fi
-
-$(TR46MAP):
-	if ! echo "$(TR46MAP_SHA1) $(TR46MAP)" | sha1sum -c -; then \
-	  rm -f $(TR46MAP); \
-	  wget $(TR46MAP_URL); \
-	  echo "$(TR46MAP_SHA1) $(TR46MAP)" | sha1sum -c -; \
-	fi
-
-$(NFCQC):
-	if ! echo "$(NFCQC_SHA1) $(NFCQC)" | sha1sum -c -; then \
-	  rm -f $(NFCQC); \
-	  wget $(NFCQC_URL); \
-	  echo "$(NFCQC_SHA1) $(NFCQC)" | sha1sum -c -; \
-	fi
+libidn_la_LIBADD = $(LTLIBICONV) $(LTLIBINTL) gl/libgnu.la
+libidn_la_LDFLAGS = \
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) -no-undefined
 
 if HAVE_LD_VERSION_SCRIPT
-libidn2_la_LDFLAGS += -Wl,--version-script=$(srcdir)/idn2.map
+libidn_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libidn.map
 else
-libidn2_la_LDFLAGS += -export-symbols-regex '^idn2_.*'
+libidn_la_LDFLAGS += -export-symbols-regex \
+			'^(idn|pr29_|punycode_|stringprep|tld_).*'
 endif
 
 if HAVE_LD_OUTPUT_DEF
-libidn2_la_LDFLAGS += -Wl,--output-def,libidn2-$(DLL_VERSION).def
-libidn2-$(DLL_VERSION).def: libidn2.la
-defexecdir = $(libdir)
-defexec_DATA = libidn2-$(DLL_VERSION).def
-DISTCLEANFILES += $(defexec_DATA)
+libidn_la_LDFLAGS += -Wl,--output-def,libidn-$(DLL_VERSION).def
+defexecdir = $(bindir)
+defexec_DATA = libidn-$(DLL_VERSION).def
+CLEANFILES = $(defexec_DATA)
+libidn-$(DLL_VERSION).def: libidn.la
 endif
+
+SPEC = $(top_srcdir)/doc/specifications
+
+#nfkc.c: gunibreak.h gunicomp.h gunidecomp.h
+#gunibreak.h gunicomp.h gunidecomp.h: gen-unicode-tables.pl $(SPEC)/UnicodeData-3.2.0.txt $(SPEC)/LineBreak-3.2.0.txt $(SPEC)/SpecialCasing-3.2.0.txt $(SPEC)/CaseFolding-3.2.0.txt $(SPEC)/CompositionExclusions-3.2.0.txt
+#	$(PERL) $(srcdir)/gen-unicode-tables.pl -decomp 3.2 $(SPEC)
+
+rfc3454.c rfc3454.h: gen-stringprep-tables.pl
+	$(PERL) $(srcdir)/gen-stringprep-tables.pl $(SPEC)/rfc3454.txt
+
+tlds.c: gen-tld-tables.pl
+	$(PERL) $(srcdir)/gen-tld-tables.pl $(top_srcdir)/doc/tld/*.tld > tlds.c

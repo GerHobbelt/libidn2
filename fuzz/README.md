@@ -9,7 +9,7 @@ are taken from the $NAME.in directory.
 Crash reproducers from OSS-Fuzz are put into $NAME.repro directory for
 regression testing with top dir 'make check' or 'make check-valgrind'.
 
-The ./configure runs below are for libidn2.
+The ./configure runs below are for libidn.
 
 
 # Running a fuzzer using clang
@@ -17,16 +17,38 @@ The ./configure runs below are for libidn2.
 Use the following commands on top dir:
 ```
 export CC=clang-6.0
-export CFLAGS="-O1 -g -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=undefined,integer,nullability -fsanitize=address -fsanitize-address-use-after-scope -fsanitize-coverage=trace-pc-guard,trace-cmp"
-ASAN_OPTIONS=detect_leaks=0 ./configure --enable-static --disable-doc --disable-gcc-warnings
+export CXX=clang++-6.0
+# address sanitizer:
+export CFLAGS="-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=undefined,integer,nullability -fsanitize=address -fsanitize-address-use-after-scope -fsanitize-coverage=trace-pc-guard,trace-cmp"
+# undefined sanitizer;
+export CFLAGS="-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=bool,array-bounds,float-divide-by-zero,function,integer-divide-by-zero,return,shift,signed-integer-overflow,vla-bound,vptr -fno-sanitize-recover=bool,array-bounds,float-divide-by-zero,function,integer-divide-by-zero,return,shift,signed-integer-overflow,vla-bound,vptr -fsanitize=fuzzer-no-link"
+ASAN_OPTIONS=detect_leaks=0 ./configure --enable-static --disable-doc
 make clean
 make -j$(nproc)
 cd fuzz
 
-# run libwget_xml_parse_buffer_fuzzer
+# run wget_options_fuzzer
 UBSAN_OPTIONS=print_stacktrace=1 ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-6.0/bin/llvm-symbolizer \
-  ./run-clang.sh libidn2_to_ascii_8z_fuzzer
+  ./run-clang.sh libidn_toascii_fuzzer
 ```
+
+If you see a crash, then a crash corpora is written that can be used for further
+investigation. E.g.
+```
+==2410==ERROR: AddressSanitizer: heap-use-after-free on address 0x602000004e90 at pc 0x00000049cf9c bp 0x7fffb5543f70 sp 0x7fffb55
+43720
+...
+Test unit written to ./crash-adc83b19e793491b1c6ea0fd8b46cd9f32e592fc
+```
+
+To reproduce the crash:
+```
+./libidn_toascii_fuzzer < ./crash-adc83b19e793491b1c6ea0fd8b46cd9f32e592fc
+```
+
+You can also copy/move that file into libidn_toascii_fuzzer.repro/
+and re-build the project without fuzzing for a valgrind run, if you like that better.
+Just a `./configure --enable-valgrind-tests` and a `make check` should reproduce it.
 
 
 # Running a fuzzer using AFL
@@ -37,7 +59,7 @@ Use the following commands on top dir:
 $ CC=afl-clang-fast ./configure --disable-doc
 $ make -j$(nproc) clean all
 $ cd fuzz
-$ ./run-afl.sh libidn2_to_ascii_8z_fuzzer
+$ ./run-afl.sh libidn_fuzzer
 ```
 
 # Fuzz code coverage using the corpus directories *.in/
@@ -52,7 +74,7 @@ xdg-open doc/coverage/index.html
 ```
 
 Each fuzzer target has it's own functions to cover, e.g.
-`libidn2_to_ascii_8z_fuzzer` covers idn2_to_ascii_8z().
+`libidn_toascii_fuzzer` covers idna_to_ascii_* functions.
 
 To work on corpora for better coverage, `cd fuzz` and use e.g.
 `./view-coverage.sh libidn_toascii_fuzzer`.
@@ -65,7 +87,7 @@ directory.
 
 # License
 
-Copyright (c) 2017-2021 Tim Ruehsen
+Copyright (c) 2017-2020 Tim Ruehsen
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),

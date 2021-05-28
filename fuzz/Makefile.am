@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021 Tim Ruehsen
+# Copyright (c) 2017-2020 Tim Ruehsen
 
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -18,33 +18,34 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-AM_CFLAGS = $(WERROR_CFLAGS) $(WARN_CFLAGS)
+AM_CFLAGS = $(WARN_CFLAGS)
 AM_CPPFLAGS = -I$(top_srcdir)/lib -I../lib -I$(top_srcdir)/gl -I../gl -DSRCDIR=\"$(abs_srcdir)\" -DTEST_RUN
 AM_LDFLAGS = -no-install
 
-LDADD = ../lib/libidn2.la ../gl/libgnu.la $(LTLIBUNISTRING)
+LDADD = ../lib/libidn.la ../gl/libgnu.la
 
 IDN_TESTS = \
- libidn2_to_ascii_8z_fuzzer$(EXEEXT) \
- libidn2_to_unicode_8z8z_fuzzer$(EXEEXT) \
- libidn2_register_fuzzer$(EXEEXT)
+ libidn_toascii_fuzzer$(EXEEXT) \
+ libidn_tounicode_fuzzer$(EXEEXT) \
+ libidn_stringprep_fuzzer$(EXEEXT)
 
 check_PROGRAMS = $(IDN_TESTS)
 
-libidn2_to_ascii_8z_fuzzer_SOURCES = libidn2_to_ascii_8z_fuzzer.c main.c fuzzer.h
-libidn2_to_unicode_8z8z_fuzzer_SOURCES = libidn2_to_unicode_8z8z_fuzzer.c main.c fuzzer.h
-libidn2_register_fuzzer_SOURCES = libidn2_register_fuzzer.c main.c fuzzer.h
+libidn_toascii_fuzzer_SOURCES = libidn_toascii_fuzzer.c main.c fuzzer.h
+libidn_tounicode_fuzzer_SOURCES = libidn_tounicode_fuzzer.c main.c fuzzer.h
+libidn_stringprep_fuzzer_SOURCES = libidn_stringprep_fuzzer.c main.c fuzzer.h
+# libidn_error_fuzzer.c is too static, not worth fuzzing
 
 dist-hook:
 	find . -name '*.options' -exec cp -v '{}' $(distdir) ';'
 	find . -name '*.dict' -exec cp -v '{}' $(distdir) ';'
-	find . -name '*.in' -exec cp -vr '{}' $(distdir) ';'
+#	find . -name '*.in' -exec cp -vr '{}' $(distdir) ';'
 	find . -name '*.repro' -exec cp -vr '{}' $(distdir) ';'
 
 TESTS = $(IDN_TESTS)
 
 clean-local:
-	rm -rf *.gc?? *.log lcov *_fuzzer coverage.info *.o
+	rm -rf *.gc?? *.log lcov coverage.info
 
 oss-fuzz:
 	if test "$$OUT" != ""; then \
@@ -52,7 +53,7 @@ oss-fuzz:
 	fuzzer=$$(basename $$ccfile .c); \
 	$$CXX $$CXXFLAGS -I$(top_srcdir)/lib -I$(top_srcdir) \
 	"$${fuzzer}.c" -o "$${fuzzer}" \
-	../lib/.libs/libidn2.a $${LIB_FUZZING_ENGINE} -Wl,-Bstatic \
+	../lib/.libs/libidn.a $${LIB_FUZZING_ENGINE} -Wl,-Bstatic \
 	-Wl,-Bdynamic; \
 	done; \
 	fi

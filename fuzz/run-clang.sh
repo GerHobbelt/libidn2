@@ -19,8 +19,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
-#
-# This file is part of libidn.
 
 trap ctrl_c INT
 
@@ -31,7 +29,7 @@ ctrl_c() {
 
 if test -z "$1"; then
 	echo "Usage: $0 <fuzzer target>"
-	echo "Example: $0 libidn2_to_ascii_8z_fuzzer"
+	echo "Example: $0 libidn_toascii_fuzzer"
 	exit 1
 fi
 
@@ -40,10 +38,9 @@ workers=$(($(nproc) - 1))
 jobs=$workers
 
 clang-6.0 \
- $CFLAGS -Og -g -I../lib -I.. \
+ $CFLAGS -Og -g -I../include -I.. \
  ${fuzzer}.c -o ${fuzzer} \
- -Wl,-Bstatic ../lib/.libs/libidn2.a -lFuzzer \
- -lunistring \
+ -Wl,-Bstatic ../lib/.libs/libidn.a -lFuzzer \
  -Wl,-Bdynamic -lclang-6.0 -lstdc++
 
 if test -n "$BUILD_ONLY"; then

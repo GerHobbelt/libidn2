@@ -1,8 +1,10 @@
-/* idna.h - internal IDNA function prototypes
-   Copyright (C) 2011-2021 Simon Josefsson
+/* idna.h --- Prototypes for Internationalized Domain Name library.
+   Copyright (C) 2002-2021 Simon Josefsson
 
-   Libidn2 is free software: you can redistribute it and/or modify it
-   under the terms of either:
+   This file is part of GNU Libidn.
+
+   GNU Libidn is free software: you can redistribute it and/or
+   modify it under the terms of either:
 
      * the GNU Lesser General Public License as published by the Free
        Software Foundation; either version 3 of the License, or (at
@@ -16,54 +18,106 @@
 
    or both in parallel, as here.
 
-   This program is distributed in the hope that it will be useful,
+   GNU Libidn is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
 
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
-   not, see <http://www.gnu.org/licenses/>.
-*/
+   not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef LIBIDN2_IDNA_H
-#define LIBIDN2_IDNA_H
+#ifndef IDNA_H
+# define IDNA_H
 
-#include <stdint.h>
-#include <stdbool.h>
-#include "idn2.h"
+# ifndef IDNAPI
+#  if defined LIBIDN_BUILDING && defined HAVE_VISIBILITY && HAVE_VISIBILITY
+#   define IDNAPI __attribute__((__visibility__("default")))
+#  elif defined LIBIDN_BUILDING && defined _MSC_VER && ! defined LIBIDN_STATIC
+#   define IDNAPI __declspec(dllexport)
+#  elif defined _MSC_VER && ! defined LIBIDN_STATIC
+#   define IDNAPI __declspec(dllimport)
+#  else
+#   define IDNAPI
+#  endif
+# endif
 
-enum
+# include <stddef.h>		/* size_t */
+# include <idn-int.h>		/* uint32_t */
+
+# ifdef __cplusplus
+extern "C"
 {
-  TEST_NFC = 0x0001,
-  TEST_2HYPHEN = 0x0002,
-  TEST_HYPHEN_STARTEND = 0x0004,
-  TEST_LEADING_COMBINING = 0x0008,
-  TEST_DISALLOWED = 0x0010,
-  /* is code point a CONTEXTJ code point? */
-  TEST_CONTEXTJ = 0x0020,
-  /* does code point pass CONTEXTJ rule? */
-  TEST_CONTEXTJ_RULE = 0x0040,
-  /* is code point a CONTEXTO code point? */
-  TEST_CONTEXTO = 0x0080,
-  /* is there a CONTEXTO rule for code point? */
-  TEST_CONTEXTO_WITH_RULE = 0x0100,
-  /* does code point pass CONTEXTO rule? */
-  TEST_CONTEXTO_RULE = 0x0200,
-  TEST_UNASSIGNED = 0x0400,
-  TEST_BIDI = 0x0800,
-  TEST_TRANSITIONAL = 0x1000,
-  TEST_NONTRANSITIONAL = 0x2000,
-  TEST_ALLOW_STD3_DISALLOWED = 0x4000,
-};
+# endif
 
-extern int
-_idn2_u8_to_u32_nfc (const uint8_t * src, size_t srclen,
-		     uint32_t ** out, size_t *outlen, int nfc);
+  /* Error codes. */
+  typedef enum
+  {
+    IDNA_SUCCESS = 0,
+    IDNA_STRINGPREP_ERROR = 1,
+    IDNA_PUNYCODE_ERROR = 2,
+    IDNA_CONTAINS_NON_LDH = 3,
+    /* Workaround typo in earlier versions. */
+    IDNA_CONTAINS_LDH = IDNA_CONTAINS_NON_LDH,
+    IDNA_CONTAINS_MINUS = 4,
+    IDNA_INVALID_LENGTH = 5,
+    IDNA_NO_ACE_PREFIX = 6,
+    IDNA_ROUNDTRIP_VERIFY_ERROR = 7,
+    IDNA_CONTAINS_ACE_PREFIX = 8,
+    IDNA_ICONV_ERROR = 9,
+    /* Internal errors. */
+    IDNA_MALLOC_ERROR = 201,
+    IDNA_DLOPEN_ERROR = 202
+  } Idna_rc;
 
-extern G_GNUC_IDN2_ATTRIBUTE_PURE bool
-_idn2_ascii_p (const uint8_t * src, size_t srclen);
+  /* IDNA flags */
+  typedef enum
+  {
+    IDNA_ALLOW_UNASSIGNED = 0x0001,
+    IDNA_USE_STD3_ASCII_RULES = 0x0002
+  } Idna_flags;
 
-extern int _idn2_label_test (int what, const uint32_t * label, size_t llen);
+# ifndef IDNA_ACE_PREFIX
+#  define IDNA_ACE_PREFIX "xn--"
+# endif
 
-#endif /* LIBIDN2_IDNA_H */
+  extern IDNAPI const char *idna_strerror (Idna_rc rc);
+
+  /* Core functions */
+  extern IDNAPI int idna_to_ascii_4i (const uint32_t * in, size_t inlen,
+				      char *out, int flags);
+  extern IDNAPI int idna_to_unicode_44i (const uint32_t * in, size_t inlen,
+					 uint32_t * out, size_t *outlen,
+					 int flags);
+
+  /* Wrappers that handle several labels */
+
+  extern IDNAPI int idna_to_ascii_4z (const uint32_t * input,
+				      char **output, int flags);
+
+  extern IDNAPI int idna_to_ascii_8z (const char *input, char **output,
+				      int flags);
+
+  extern IDNAPI int idna_to_ascii_lz (const char *input, char **output,
+				      int flags);
+
+  extern IDNAPI int idna_to_unicode_4z4z (const uint32_t * input,
+					  uint32_t ** output, int flags);
+
+  extern IDNAPI int idna_to_unicode_8z4z (const char *input,
+					  uint32_t ** output, int flags);
+
+  extern IDNAPI int idna_to_unicode_8z8z (const char *input,
+					  char **output, int flags);
+
+  extern IDNAPI int idna_to_unicode_8zlz (const char *input,
+					  char **output, int flags);
+
+  extern IDNAPI int idna_to_unicode_lzlz (const char *input,
+					  char **output, int flags);
+
+# ifdef __cplusplus
+}
+# endif
+
+#endif				/* IDNA_H */

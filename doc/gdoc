@@ -97,7 +97,7 @@ eval '(exit $?0)' && eval 'exec perl -S "$0" ${1+"$@"}'
 #  * my_function
 #  **/
 #
-# If the Description: header tag is omitted, then there must be a blank line
+# If the Description: header tag is ommitted, then there must be a blank line
 # after the last parameter specification.
 # e.g.
 # /**
@@ -302,7 +302,7 @@ sub dump_section {
 #  parameterlist => @list of parameters
 #  parameters => %parameter descriptions
 #  sectionlist => @list of sections
-#  sections => %section descriptions
+#  sections => %descriont descriptions
 #
 
 sub just_highlight {
@@ -739,7 +739,7 @@ sub output_man {
 	print "should give you access to the complete manual.\n";
 	print "As an alternative you may obtain the manual from:\n";
 	print ".IP\n";
-	print ".B http://www.gnu.org/software/libidn/" . $args{'module'} . "/manual/\n";
+	print ".B http://www.gnu.org/software/" . $args{'module'} . "/manual/\n";
 	print ".PP\n";
     }
 }
@@ -1006,7 +1006,7 @@ foreach $file (@ARGV) {
 		    $contents .= $1."\n";
 		}
 	    } else {
-		# i don't know - bad line?  ignore.
+		# i dont know - bad line?  ignore.
 		print STDERR "warning: $lineno: Bad line: $_";
 	    }
 	} elsif ($state == 3) {	# scanning for function { (end of prototype)

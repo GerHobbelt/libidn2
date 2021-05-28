@@ -1,74 +1,78 @@
-# Copyright (C) 2011-2021 Simon Josefsson
-
+## Process this file with automake to produce Makefile.in
+# Copyright (C) 2002-2021 Simon Josefsson.
+#
+# This file is part of GNU Libidn.
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-SUBDIRS = reference
+SUBDIRS = specifications tld java cyclo
+if ENABLE_GTK_DOC
+SUBDIRS += . reference
+endif
 
-EXTRA_DIST = gdoc libidn2.html libidn2.pdf texinfo.css idn2.h2m
-BUILT_SOURCES = idn2.1
-info_TEXINFOS = libidn2.texi
-libidn2_TEXINFOS = libidn2.texi example-tounicode.c example-toascii.c	\
-	decode.c lookup.c register.c $(gdoc_TEXINFOS) idn2--help.texi
+EXTRA_DIST = gdoc components.fig
 
-AM_MAKEINFOHTMLFLAGS = $(AM_MAKEINFOFLAGS) \
-	--no-split --number-sections --css-include=texinfo.css
+info_TEXINFOS = libidn.texi
+libidn_TEXINFOS = fdl-1.3.texi
+libidn_TEXINFOS += $(gdoc_TEXINFOS)
+libidn_TEXINFOS += libidn-components.eps libidn-components.png	\
+			libidn-components.pdf
 
-decode.c: $(top_srcdir)/examples/decode.c
-	tail -n +18 $< > $@.tmp
-	mv $@.tmp $@
+imagesdir = $(infodir)
+images_DATA = libidn-components.png
 
-lookup.c: $(top_srcdir)/examples/lookup.c
-	tail -n +18 $< > $@.tmp
-	mv $@.tmp $@
+libidn-components.eps: components.fig
+	fig2dev -L eps $< $@
 
-register.c: $(top_srcdir)/examples/register.c
-	tail -n +18 $< > $@.tmp
-	mv $@.tmp $@
+libidn-components.png: components.fig
+	fig2dev -L png $< $@
 
-example-tounicode.c: $(top_srcdir)/examples/example-tounicode.c
-	cp $< $@
+libidn-components.pdf: components.fig
+	fig2dev -L pdf $< $@
 
-example-toascii.c: $(top_srcdir)/examples/example-toascii.c
-	cp $< $@
+AM_MAKEINFOFLAGS = -I $(top_builddir)/doc -I $(top_srcdir)/examples
+TEXI2DVI = texi2dvi $(AM_MAKEINFOFLAGS)
+AM_MAKEINFOHTMLFLAGS = --no-split $(AM_MAKEINFOFLAGS)
 
-dist_man_MANS = $(gdoc_MANS)
-dist_man_MANS += idn2.1
+# Man pages.
 
-idn2.1: idn2.h2m $(top_srcdir)/src/idn2.c $(top_srcdir)/src/idn2.ggo \
+dist_man_MANS = idn.1 $(gdoc_MANS)
+MAINTAINERCLEANFILES = $(dist_man_MANS)
+
+idn.1: $(top_srcdir)/src/idn.c $(top_srcdir)/src/idn.ggo \
 		$(top_srcdir)/configure.ac
-	$(HELP2MAN) --include=$(srcdir)/idn2.h2m \
-		--output=$@ $(top_builddir)/src/idn2$(EXEEXT)
-
-idn2--help.texi: $(top_srcdir)/src/idn2.c
-	$(top_builddir)/src/idn2$(EXEEXT) --help | $(GREP) '^ \+-' > tmp
-	mv tmp idn2--help.texi
-
-MAINTAINERCLEANFILES = $(dist_man_MANS) decode.c example-tounicode.c example-toascii.c lookup.c \
-	register.c stamp-vti version.texi
+	$(HELP2MAN) \
+		--name="Internationalized Domain Names command line tool" \
+		--output=$@ $(top_builddir)/src/idn$(EXEEXT)
 
 # GDOC
 
-GDOC_SRC = $(top_srcdir)/lib/decode.c $(top_srcdir)/lib/lookup.c $(top_srcdir)/lib/register.c \
-	$(top_srcdir)/lib/error.c $(top_srcdir)/lib/version.c $(top_srcdir)/lib/free.c
+GDOC_BIN = $(srcdir)/gdoc
+GDOC_SRC = $(top_srcdir)/lib/idna.c $(top_srcdir)/lib/nfkc.c	\
+	$(top_srcdir)/lib/pr29.c $(top_srcdir)/lib/punycode.c	\
+	$(top_srcdir)/lib/stringprep.c $(top_srcdir)/lib/tld.c	\
+	$(top_srcdir)/lib/toutf8.c $(top_srcdir)/lib/version.c \
+	$(top_srcdir)/lib/idn-free.c \
+	$(top_srcdir)/lib/strerror-idna.c $(top_srcdir)/lib/strerror-pr29.c \
+	$(top_srcdir)/lib/strerror-punycode.c \
+	$(top_srcdir)/lib/strerror-stringprep.c \
+	$(top_srcdir)/lib/strerror-tld.c
 GDOC_TEXI_PREFIX = texi/
 GDOC_MAN_PREFIX = man/
 GDOC_MAN_EXTRA_ARGS = -module $(PACKAGE) -sourceversion $(VERSION) \
-	-includefuncprefix -seeinfo $(PACKAGE)
-include $(srcdir)/Makefile.gdoci
-
-maintainer-clean-local:
-	rm -rf man texi manual
-
-manual:
-	../build-aux/gendocs.sh --html --css-include=texinfo.css -o manual $(PACKAGE) "$(PACKAGE_NAME)"
+	-bugsto $(PACKAGE_BUGREPORT) -pkg-name "$(PACKAGE_NAME)" \
+	-includefuncprefix -seeinfo $(PACKAGE) \
+	-copyright "2002-2021 Simon Josefsson" \
+	-verbatimcopying
+include $(srcdir)/gdoc.mk

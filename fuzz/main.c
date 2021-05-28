@@ -18,8 +18,6 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- *
- * This file is part of libidn2.
  */
 
 #include "../config.h"
@@ -39,22 +37,17 @@
 
 #include <dirent.h>
 
-static void test_all_from(const char *dirname)
+static int test_all_from(const char *dirname)
 {
 	DIR *dirp;
 	struct dirent *dp;
-	char fname[1024];
-	int len;
 
 	if ((dirp = opendir(dirname))) {
 		while ((dp = readdir(dirp))) {
 			if (*dp->d_name == '.') continue;
 
-			len = snprintf(fname, sizeof(fname), "%s/%s", dirname, dp->d_name);
-			if (len < 0 || len >= (int) sizeof(fname)) {
-				fprintf(stderr, "File name truncation: %s/%s\n", dirname, dp->d_name);
-				continue;
-			}
+			char fname[strlen(dirname) + strlen(dp->d_name) + 2];
+			snprintf(fname, sizeof(fname), "%s/%s", dirname, dp->d_name);
 
 			int fd;
 			if ((fd = open(fname, O_RDONLY)) == -1) {
@@ -75,48 +68,37 @@ static void test_all_from(const char *dirname)
 				printf("testing %llu bytes from '%s'\n", (unsigned long long) st.st_size, fname);
 				LLVMFuzzerTestOneInput(data, st.st_size);
 			} else
-				fprintf(stderr, "Failed to read %llu bytes from %s (%d), got %d\n", (unsigned long long) st.st_size, fname, errno, (int) n);
+				fprintf(stderr, "Failed to read %llu bytes from %s (%d), got %zd\n", (unsigned long long) st.st_size, fname, errno, n);
 
 			free(data);
 			close(fd);
 		}
 		closedir(dirp);
+		return 0;
 	}
+
+	return 1;
 }
 
 int main(int argc, char **argv)
 {
-	int len;
-
-	/* if VALGRIND testing is enabled, we have to call ourselves with valgrind checking */
-	if (argc == 1) {
-		const char *valgrind = getenv("TESTS_VALGRIND");
-
-		if (valgrind && *valgrind) {
-			char cmd[1024]; /* avoid alloca / VLA / heap allocation */
-
-			len = snprintf(cmd, sizeof(cmd), "TESTS_VALGRIND="" %s %s", valgrind, argv[0]);
-			if (len < 0 || len >= (int) sizeof(cmd))
-				return 1; /* failure on command truncation */
-
-			return system(cmd) != 0;
-		}
-	}
-
 	const char *target = strrchr(argv[0], '/');
 	target = target ? target + 1 : argv[0];
 
-	char corporadir[1024]; /* avoid alloca / VLA / heap allocation */
+	{
+		int  rc;
+		char corporadir[sizeof(SRCDIR) + 1 + strlen(target) + 8];
+		snprintf(corporadir, sizeof(corporadir), SRCDIR "/%s.in", target);
 
-	len = snprintf(corporadir, sizeof(corporadir), SRCDIR "/%s.in", target);
-	if (len < 0 || len >= (int) sizeof(corporadir))
-		return 1; /* failure on file name truncation */
+		rc = test_all_from(corporadir);
+		if (rc)
+			fprintf(stderr, "Failed to find %s\n", corporadir);
 
-	test_all_from(corporadir);
-
-	snprintf(corporadir, sizeof(corporadir), SRCDIR "/%s.repro", target);
-
-	test_all_from(corporadir);
+		snprintf(corporadir, sizeof(corporadir), SRCDIR "/%s.repro", target);
+		test_all_from(corporadir);
+		if (test_all_from(corporadir) && rc)
+			return 77; // SKIP
+	}
 
 	return 0;
 }

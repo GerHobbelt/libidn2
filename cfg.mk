@@ -1,59 +1,239 @@
-# Copyright (C) 2011-2021 Simon Josefsson
-
+# Copyright (C) 2006-2021 Simon Josefsson
+#
+# This file is part of GNU Libidn.
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-manual_title = Internationalized Domain Names Library
+WFLAGS ?= --enable-gcc-warnings
+ADDFLAGS ?=
+CFGFLAGS ?= --enable-java --enable-gtk-doc --enable-gtk-doc-pdf \
+	$(ADDFLAGS) $(WFLAGS)
 
-old_NEWS_hash = 71ff7c3bdfcaf6931c1e980d859de147
+ifeq ($(.DEFAULT_GOAL),abort-due-to-no-makefile)
+.DEFAULT_GOAL := bootstrap
+endif
 
-bootstrap-tools = gnulib,autoconf,automake,libtoolize,make,makeinfo,help2man,gperf,gengetopt,gtkdocize,tar,gzip
-
-local-checks-to-skip += sc_unmarked_diagnostics sc_bindtextdomain # Re-add when we have translation
-local-checks-to-skip += sc_immutable_NEWS
-local-checks-to-skip += sc_prohibit_strcmp
-local-checks-to-skip += sc_copyright_check
-local-checks-to-skip += sc_prohibit_gnu_make_extensions
-
-# Ignore gnulib files.
+local-checks-to-skip = sc_prohibit_strcmp sc_prohibit_have_config_h	\
+	sc_require_config_h sc_require_config_h_first			\
+	sc_prohibit_HAVE_MBRTOWC sc_program_name sc_trailing_blank	\
+	sc_GPL_version sc_immutable_NEWS sc_prohibit_gnu_make_extensions
 VC_LIST_ALWAYS_EXCLUDE_REGEX = \
-  ^(bootstrap|maint.mk|build-aux/gnupload|src/gl/.*|gl/.*|m4/.*|^fuzz/.*.in/.*|^fuzz/.*.repro/.*)$$
+	^(GNUmakefile|maint.mk|gtk-doc.make|m4/pkg.m4|m4/libtool.m4|doc/specifications|contrib/doxygen/Doxyfile|doc/fdl-1.3.texi|csharp/libidn.*suo|(lib/)?(gl|gltests|build-aux)/)
 
 # Explicit syntax-check exceptions.
-exclude_file_name_regexp--sc_program_name = ^(tests|examples)/.*\.c$$
-exclude_file_name_regexp--sc_prohibit_empty_lines_at_EOF = ^doc/reference/version.xml.in$$
-exclude_file_name_regexp--sc_trailing_blank = ^(tests/IdnaTest.(txt|inc))|(doc/gdoc)$$
-exclude_file_name_regexp--sc_require_config_h = ^examples/.*\.c|lib/gen.*\.c|^fuzz/main.c$$
-exclude_file_name_regexp--sc_require_config_h_first = ^examples/.*\.c|lib/gen.*\.c|^fuzz/main.c$$
-exclude_file_name_regexp--sc_prohibit_strncpy = ^src/idn2.c$$
-exclude_file_name_regexp--sc_GPL_version = ^COPYINGv2|[^/]*.[ch](.in)?$$
-exclude_file_name_regexp--sc_prohibit_atoi_atof = ^lib/gentr46map\.c$$
-exclude_file_name_regexp--sc_makefile_at_at_check = ^Makefile.am|src/Makefile\.am|tests/Makefile.am$$
-exclude_file_name_regexp--sc_prohibit_empty_lines_at_EOF = ^lib/IdnaMappingTable.txt|doc/reference/version.xml.in$$
-exclude_file_name_regexp--sc_prohibit_undesirable_word_seq = ^lib/idna-tables-properties.csv$$
+exclude_file_name_regexp--sc_bindtextdomain = ^examples/|libc/|tests/|fuzz/
+exclude_file_name_regexp--sc_prohibit_atoi_atof = ^examples/example2.c$$
+exclude_file_name_regexp--sc_copyright_check = ^doc/libidn.texi
+exclude_file_name_regexp--sc_useless_cpp_parens = ^lib/nfkc.c$$
+exclude_file_name_regexp--sc_prohibit_strncpy = ^src/idn.c$$
+exclude_file_name_regexp--sc_prohibit_empty_lines_at_EOF = ^fuzz/libidn_.*fuzzer.(in|repro)/.*$$
+exclude_file_name_regexp--sc_two_space_separator_in_usage = ^cfg.mk$$
 
-my-update-copyright:
-	make update-copyright update-copyright-env='UPDATE_COPYRIGHT_HOLDER="Tim Ruehsen" UPDATE_COPYRIGHT_USE_INTERVALS=2'
-	make update-copyright update-copyright-env='UPDATE_COPYRIGHT_HOLDER="Simon Josefsson" UPDATE_COPYRIGHT_USE_INTERVALS=2'
+INDENT_SOURCES = -ppi 1 `find . -name '*.[ch]'|grep -v -e ^./gl/ -e ^./fuzz/ -e ^./gltests/ -e ^./lib/gl/ -e ^./lib/gltests/ -e '^./lib/\(gunibreak.h\|gunicomp.h\|gunidecomp.h\|rfc3454.c\|rfc3454.h\|tlds.c\)$$'`
+
+doc/Makefile.gdoc:
+	printf "gdoc_MANS =\ngdoc_TEXINFOS =\n" > doc/Makefile.gdoc
+
+autoreconf: doc/Makefile.gdoc
+	for f in po/*.po.in; do \
+		cp $$f `echo $$f | sed 's/.in//'`; \
+	done
+	touch ChangeLog
+	rm -f gtk-doc.make
+	gtkdocize 2>/dev/null || printf "EXTRA_DIST =\nCLEANFILES =\n" >gtk-doc.make
+	autopoint
+	for f in m4/*.m4; do \
+		if test -f gl/$$f; then \
+			echo Removing $$f to use gl/$$f; \
+			rm -f $$f; \
+			touch gl/$$f; \
+		elif test -f lib/gl/$$f; then \
+			echo Removing $$f to use lib/gl/$$f; \
+			rm -f $$f; \
+			touch lib/gl/$$f; \
+		fi; \
+	done
+	GTKDOCIZE=true AUTOPOINT=true autoreconf --install
+
+update-po: refresh-po
+	for f in `ls po/*.po | grep -v quot.po`; do \
+		cp $$f $$f.in; \
+	done
+	git add po/*.po.in
+	git commit -m "Sync with TP." po/LINGUAS po/*.po.in
+
+bootstrap: autoreconf
+	./configure $(CFGFLAGS)
 
 aximport:
 	for f in m4/ax_*.m4; do \
 		wget -O $$f "https://git.savannah.gnu.org/gitweb/?p=autoconf-archive.git;a=blob_plain;f=$$f"; \
 	done
 
-INDENT_SOURCES = examples/*.c lib/*.c lib/*.h src/*.c src/*.h tests/*.c
+review-diff:
+	git diff `git describe --abbrev=0`.. \
+	| grep -v -e ^index -e '^diff --git' \
+	| filterdiff -p 1 -x 'build-aux/*' -x 'gl/*' -x 'gltests/*' -x 'lib/gl/*' -x 'lib/gltests/*' -x 'po/*' -x 'maint.mk' -x '.gitignore' -x '.x-sc*' -x ChangeLog -x GNUmakefile \
+	| less
 
-sc_codespell:
-	@if `which codespell > /dev/null`; then \
-		codespell -L tim,mitre `git ls-files|egrep -v '_fuzzer.in|_fuzzer.repro|gnulib|^lib/.*\.(csv|txt)$$'`; \
-	fi
+my-update-copyright:
+	make update-copyright update-copyright-env='UPDATE_COPYRIGHT_USE_INTERVALS=1'
+	make update-copyright update-copyright-env='UPDATE_COPYRIGHT_HOLDER="Simon Josefsson" UPDATE_COPYRIGHT_USE_INTERVALS=1'
+	perl -pi -e "s/2002-20.. Simon Josefsson/2002-`(date +%Y)` Simon Josefsson/" doc/Makefile.am src/idn.c
+
+# Fuzz
+
+COVERAGE_CCOPTS ?= "-g --coverage"
+COVERAGE_OUT ?= doc/coverage
+
+fuzz-coverage:
+	$(MAKE) $(AM_MAKEFLAGS) clean
+	lcov --directory . --zerocounters
+	$(MAKE) $(AM_MAKEFLAGS) CFLAGS=$(COVERAGE_CCOPTS) CXXFLAGS=$(COVERAGE_CCOPTS)
+	$(MAKE) -C fuzz $(AM_MAKEFLAGS) CFLAGS=$(COVERAGE_CCOPTS) CXXFLAGS=$(COVERAGE_CCOPTS) check
+	mkdir -p $(COVERAGE_OUT)
+	lcov --directory . --output-file $(COVERAGE_OUT)/$(PACKAGE).info --capture
+	lcov --remove $(COVERAGE_OUT)/$(PACKAGE).info '*/lib/gl/*' -o $(COVERAGE_OUT)/$(PACKAGE).info
+	genhtml --output-directory $(COVERAGE_OUT) \
+                $(COVERAGE_OUT)/$(PACKAGE).info \
+                --highlight --frames --legend \
+                --title "$(PACKAGE_NAME)"
+	@echo
+	@echo "View fuzz coverage report with 'xdg-open $(COVERAGE_OUT)/index.html'"
+
+# Release
+
+htmldir = ../www-$(PACKAGE)
+
+i18n:
+	-$(MAKE) update-po
+
+coverage-my:
+	ln -s . lib/gl/unistr/unistr
+	ln -s . lib/gltests/glthread/glthread
+	ln -s . lib/gltests/unistr/unistr
+	$(MAKE) coverage WERROR_CFLAGS=
+
+coverage-copy:
+	rm -fv `find $(htmldir)/coverage -type f | grep -v CVS`
+	cp -rv $(COVERAGE_OUT)/* $(htmldir)/coverage/
+
+coverage-upload:
+	cd $(htmldir) && cvs commit -m "Update." coverage
+
+clang:
+	make clean
+	scan-build ./configure
+	rm -rf scan.tmp
+	scan-build -o scan.tmp make
+
+clang-copy:
+	rm -fv `find $(htmldir)/clang-analyzer -type f | grep -v CVS`
+	mkdir -p $(htmldir)/clang-analyzer/
+	cp -rv scan.tmp/*/* $(htmldir)/clang-analyzer/
+
+clang-upload:
+	cd $(htmldir) && \
+		cvs add clang-analyzer || true && \
+		cvs add clang-analyzer/*.css clang-analyzer/*.js \
+			clang-analyzer/*.html || true && \
+		cvs commit -m "Update." clang-analyzer
+
+cyclo-copy:
+	cp -v doc/cyclo/cyclo-$(PACKAGE).html $(htmldir)/cyclo/index.html
+
+cyclo-upload:
+	cd $(htmldir) && cvs commit -m "Update." cyclo/index.html
+
+gendoc-copy:
+	cd doc && $(SHELL) ../build-aux/gendocs.sh -I ../examples -I . \
+		--email $(PACKAGE_BUGREPORT) \
+		--html "--css-include=texinfo.css" \
+		-o ../$(htmldir)/manual/ $(PACKAGE) "$(PACKAGE_NAME)"
+
+gendoc-upload:
+	cd $(htmldir) && \
+		cvs add manual || true && \
+		cvs add manual/html_node || true && \
+		cvs add -kb manual/*.gz manual/*.pdf \
+			manual/html_node/*.png || true && \
+		cvs add manual/*.txt manual/*.html \
+			manual/html_node/*.html || true && \
+		cvs commit -m "Update." manual/
+
+gtkdoc-copy:
+	mkdir -p $(htmldir)/reference/
+	cp -v doc/reference/$(PACKAGE).pdf \
+		doc/reference/html/*.html \
+		doc/reference/html/*.png \
+		doc/reference/html/*.devhelp2 \
+		doc/reference/html/*.css \
+		$(htmldir)/reference/
+
+gtkdoc-upload:
+	cd $(htmldir) && \
+		cvs add reference || true && \
+		cvs add -kb reference/*.png reference/*.pdf || true && \
+		cvs add reference/*.html reference/*.css \
+			reference/*.devhelp2 || true && \
+		cvs commit -m "Update." reference/
+
+javadoc-copy:
+	cp -rv doc/java/html $(htmldir)/javadoc/
+
+javadoc-upload:
+	cd $(htmldir) && \
+		cvs commit -m "Update." javadoc/
+
+doxygen-copy:
+	cd contrib/doxygen && doxygen && cd ../.. && cp -v contrib/doxygen/html/* $(htmldir)/doxygen/ && cd contrib/doxygen/latex && make refman.pdf && cd ../../../ && cp contrib/doxygen/latex/refman.pdf $(htmldir)/doxygen/$(PACKAGE).pdf
+
+doxygen-upload:
+	cd $(htmldir) && \
+		cvs add doxygen || true && \
+		cvs add -kb doxygen/*.png || true && \
+		cvs add doxygen/*.js doxygen/*.html || true && \
+		cvs commit -m "Update." doxygen/
+
+ChangeLog:
+	git2cl > ChangeLog
+	cat .clcopying >> ChangeLog
+
+tag = $(PACKAGE)-`echo $(VERSION) | sed 's/\./-/g'`
+
+tarball:
+	! git tag -l $(tag) | grep $(PACKAGE) > /dev/null
+	rm -f ChangeLog
+	$(MAKE) ChangeLog distcheck
+
+binaries:
+	cd windows && make -f libidn4win.mk libidn4win VERSION=$(VERSION)
+
+binaries-upload:
+	cd windows && make -f libidn4win.mk upload VERSION=$(VERSION)
+
+source:
+	git tag -u 54265e8c -m $(VERSION) $(tag)
+
+release-check: syntax-check i18n tarball binaries gendoc-copy gtkdoc-copy javadoc-copy doxygen-copy coverage-my coverage-copy clang clang-copy cyclo-copy
+
+release-upload-www: gendoc-upload gtkdoc-upload javadoc-upload doxygen-upload coverage-upload clang-upload cyclo-upload
+
+release-upload-ftp:
+	build-aux/gnupload --to ftp.gnu.org:$(PACKAGE) $(distdir).tar.gz
+	cp $(distdir).tar.gz $(distdir).tar.gz.sig ../releases/$(PACKAGE)/
+	git push
+	git push --tags
+
+release: release-check release-upload-www source release-upload-ftp binaries-upload
