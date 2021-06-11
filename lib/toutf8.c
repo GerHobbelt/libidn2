@@ -1,5 +1,5 @@
 /* toutf8.c --- Convert strings from system locale into UTF-8.
-   Copyright (C) 2002-2020 Simon Josefsson
+   Copyright (C) 2002-2021 Simon Josefsson
 
    This file is part of GNU Libidn.
 
@@ -70,7 +70,7 @@
  * nl_langinfo isn't supported or return anything.
  *
  * Note that this function return the application's locale's preferred
- * charset (or thread's locale's preffered charset, if your system
+ * charset (or thread's locale's preferred charset, if your system
  * support thread-specific locales).  It does not return what the
  * system may be using.  Thus, if you receive data from external
  * sources you cannot in general use this function to guess what

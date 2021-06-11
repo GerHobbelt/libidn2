@@ -1,6 +1,6 @@
 /* tld.c --- Declarations for TLD restriction checking.
-   Copyright (C) 2004-2020 Simon Josefsson.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Simon Josefsson.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
 
    Author: Thomas Jacob, Internet24.de
 
@@ -75,11 +75,11 @@ tld_get_table (const char *tld, const Tld_table ** tables)
  * tld_default_table:
  * @tld: TLD name (e.g. "com") as zero terminated ASCII byte string.
  * @overrides: Additional zero terminated array of #Tld_table
- *   info-structures for TLDs, or %NULL to only use library deault
+ *   info-structures for TLDs, or %NULL to only use library default
  *   tables.
  *
  * Get the TLD table for a named TLD, using the internal defaults,
- * possibly overrided by the (optional) supplied tables.
+ * possibly overridden by the (optional) supplied tables.
  *
  * Return value: Return structure corresponding to TLD @tld_str, first
  *   looking through @overrides then thru built-in list, or %NULL if

@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
-# Copyright (C) 2002-2020 Simon Josefsson.
-# Copyright (C) 2004-2020 Free Software Foundation, Inc.
+# Copyright (C) 2002-2021 Simon Josefsson.
+# Copyright (C) 2004-2021 Free Software Foundation, Inc.
 #
 # This file is part of GNU Libidn.
 #
@@ -21,8 +21,11 @@ EXTRA_DIST = gen-stringprep-tables.pl gen-unicode-tables.pl gen-tld-tables.pl
 
 AM_CPPFLAGS = -I$(srcdir)/gl -Igl -DLIBIDN_BUILDING
 AM_CPPFLAGS += -DLOCALEDIR=\"$(localedir)\"
-AM_CFLAGS = $(WERROR_CFLAGS) $(WSTACK_CFLAGS) $(WARN_CFLAGS)
+AM_CFLAGS = $(WSTACK_CFLAGS) $(WARN_CFLAGS)
 AM_CFLAGS += $(CFLAG_VISIBILITY)
+
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libidn.pc
 
 lib_LTLIBRARIES = libidn.la
 

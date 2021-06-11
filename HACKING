@@ -1,56 +1,61 @@
 Libidn HACKING -- Information for contributors.                 -*- outline -*-
-Copyright (C) 2009-2020 Simon Josefsson
+Copyright (C) 2009-2021 Simon Josefsson
 See the end for copying conditions.
 
 This file contains instructions for developers and advanced users that
 wants to build from version controlled sources.
 
-We require several tools to build the software, including:
+We rely on several tools to build the software, including:
 
-- Make <http://www.gnu.org/software/make/>
-- Automake <http://www.gnu.org/software/automake/>
-- Autoconf <http://www.gnu.org/software/autoconf/>
-- Libtool <http://www.gnu.org/software/libtool/>
-- Gettext <http://www.gnu.org/software/gettext/>
-- Texinfo <http://www.gnu.org/software/texinfo/>
-- Gperf <http://www.gnu.org/software/gperf/>
-- help2man <http://www.gnu.org/software/help2man/>
-- Gengetopt <http://www.gnu.org/software/gengetopt/>
-- Tar <http://www.gnu.org/software/tar/>
-- Gzip <http://www.gnu.org/software/gzip/>
-- Texlive & epsf <http://www.tug.org/texlive/> (for PDF manual)
-- CVS <http://www.gnu.org/software/cvs/> (for gettext autopoint)
-- GTK-DOC <http://www.gtk.org/gtk-doc/> (for API manual)
-- Git <http://git.or.cz/>
-- Perl <http://www.cpan.org/>
-- Valgrind <http://valgrind.org/> (optional)
+- Make <https://www.gnu.org/software/make/>
+- C compiler <https://www.gnu.org/software/gcc/>
+- Automake <https://www.gnu.org/software/automake/>
+- Autoconf <https://www.gnu.org/software/autoconf/>
+- Libtool <https://www.gnu.org/software/libtool/>
+- Gettext <https://www.gnu.org/software/gettext/>
+- Texinfo <https://www.gnu.org/software/texinfo/>
+- Gperf <https://www.gnu.org/software/gperf/>
+- help2man <https://www.gnu.org/software/help2man/>
+- Gengetopt <https://www.gnu.org/software/gengetopt/>
+- Tar <https://www.gnu.org/software/tar/>
+- Gzip <https://www.gnu.org/software/gzip/>
+- Texlive & epsf <https://tug.org/texlive/> (for PDF manual)
+- GTK-DOC <https://gitlab.gnome.org/GNOME/gtk-doc> (for API manual)
+- Git <https://git-scm.com/>
+- Perl <https://www.cpan.org/src/http://www.cpan.org/>
+- Valgrind <https://valgrind.org/> (optional)
 - OpenJDK (for java port)
-- Mono mcs <http://www.mono.org/> (for C# port)
-- fig2dev <http://www-epb.lbl.gov/xfig/>
+- Mono mcs <https://www.mono-project.com/> (for C# port)
+- fig2dev <https://sourceforge.net/projects/mcj/>
 
-The required software is typically distributed with your operating
-system, and the instructions for installing them differ.  Here are
-some hints:
+The software is typically distributed with your operating system, and
+the instructions for installing them differ.  Here are some hints:
 
-gNewSense/Debian/Ubuntu:
+Debian 10.x, Ubuntu 20.04:
 apt-get install make git autoconf automake libtool gettext autopoint cvs
-apt-get install texinfo texlive texlive-generic-recommended texlive-extra-utils
+apt-get install texinfo texlive texlive-plain-genric texlive-extra-utils
 apt-get install help2man gtk-doc-tools dblatex valgrind gengetopt
 apt-get install transfig mono-mcs gperf default-jdk-headless
 
+Fedora 33:
+dnf install -y make git autoconf automake libtool gettext-devel cvs
+dnf install -y texinfo texinfo-tex texlive
+dnf install -y help2man gtk-doc gengetopt dblatex valgrind
+dnf install -y gperf java-latest-openjdk-devel
+
 To download the version controlled sources:
 
-$ git clone git://git.savannah.gnu.org/libidn.git
-$ cd libidn
+  git clone https://git.savannah.gnu.org/git/libidn.git
+  cd libidn
 
 The next step is to run autoreconf, ./configure, etc:
 
-$ make bootstrap
+  make bootstrap
 
 Then build the project normally:
 
-$ make
-$ make check
+  make
+  make check
 
 When building from version controlled sources, some developer specific
 flags are automatically enabled.  For example, the self-checks are run
