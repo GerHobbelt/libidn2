@@ -1,5 +1,5 @@
 /* tst_toascii64oob.c --- Regression tests for stack OOB in idna_to_ascii().
- * Copyright (C) 2002-2020 Simon Josefsson
+ * Copyright (C) 2002-2021 Simon Josefsson
  *
  * This file is part of GNU Libidn.
  *
@@ -42,8 +42,8 @@
    make
    make
    make clean
-   make CFLAGS="-fsanitize=address" WERROR_CFLAGS=
-   make CFLAGS="-fsanitize=address" WERROR_CFLAGS= check VALGRIND=
+   make CFLAGS="-fsanitize=address"
+   make CFLAGS="-fsanitize=address" check VALGRIND=
 
    Revert patch in URL above to trigger this self test.
  */
