@@ -1,5 +1,5 @@
 /* tst_stringprep.c --- Self tests for stringprep().
- * Copyright (C) 2002-2016 Simon Josefsson
+ * Copyright (C) 2002-2020 Simon Josefsson
  *
  * This file is part of GNU Libidn.
  *
@@ -101,7 +101,7 @@ const struct stringprep strprep[] = {
    STRINGPREP_CONTAINS_PROHIBITED},
   {"Surrogate code U+DF42",
    "\xED\xBD\x82", NULL, "Nameprep", 0, STRINGPREP_ICONV_ERROR
-   /* was STRINGPREP_CONTAINS_PROHIBITED */},
+   /* was STRINGPREP_CONTAINS_PROHIBITED */ },
   {"Non-plain text character U+FFFD",
    "\xEF\xBF\xBD", NULL, "Nameprep", 0, STRINGPREP_CONTAINS_PROHIBITED},
   {"Ideographic description character U+2FF5",

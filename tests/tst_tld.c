@@ -1,5 +1,5 @@
 /* tst_tld.c --- Self tests for tld_*().
- * Copyright (C) 2004-2016 Simon Josefsson
+ * Copyright (C) 2004-2020 Simon Josefsson
  *
  * This file is part of GNU Libidn.
  *
@@ -62,20 +62,18 @@ static const struct tld tld[] = {
    3}
 };
 
-static const Tld_table _tld_fr_override =
-  {
-    "fr",
-    "2.0",
-    0,
-    NULL
-  };
+static const Tld_table _tld_fr_override = {
+  "fr",
+  "2.0",
+  0,
+  NULL
+};
 
 /* Main array */
-const Tld_table * my_tld_tables[] =
-  {
-    &_tld_fr_override,
-    NULL
-  };
+const Tld_table *my_tld_tables[] = {
+  &_tld_fr_override,
+  NULL
+};
 
 void
 doit (void)

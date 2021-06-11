@@ -1,5 +1,5 @@
 /* nfkc.c --- Unicode normalization utilities.
-   Copyright (C) 2002-2016 Simon Josefsson
+   Copyright (C) 2002-2020 Simon Josefsson
 
    This file is part of GNU Libidn.
 
@@ -28,7 +28,7 @@
    not, see <http://www.gnu.org/licenses/>. */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include <stdlib.h>
@@ -78,11 +78,11 @@
  */
 
 #ifndef	FALSE
-#define	FALSE	(0)
+# define	FALSE	(0)
 #endif
 
 #ifndef	TRUE
-#define	TRUE	(!FALSE)
+# define	TRUE	(!FALSE)
 #endif
 
 #define G_N_ELEMENTS(arr)		(sizeof (arr) / sizeof ((arr)[0]))
@@ -462,8 +462,7 @@ g_utf8_to_ucs4_fast (const gchar * str, glong len, glong * items_written)
  **/
 static gchar *
 g_ucs4_to_utf8 (const gunichar * str,
-		glong len,
-		glong * items_read, glong * items_written)
+		glong len, glong * items_read, glong * items_written)
 {
   gint result_length;
   gchar *result = NULL;
@@ -690,13 +689,13 @@ combine_hangul (gunichar a, gunichar b, gunichar * result)
     {
       gint SIndex = a - SBase;
 
-		if ((SIndex % TCount) == 0)
-        {
-          gint TIndex = b - TBase;
+      if ((SIndex % TCount) == 0)
+	{
+	  gint TIndex = b - TBase;
 
-          *result = a + TIndex;
-          return TRUE;
-        }
+	  *result = a + TIndex;
+	  return TRUE;
+	}
     }
 
   return FALSE;
@@ -1005,7 +1004,7 @@ stringprep_unichar_to_utf8 (uint32_t c, char *outbuf)
  *               This value must be deallocated by the caller.
  **/
 uint32_t *
-stringprep_utf8_to_ucs4 (const char *str, ssize_t len, size_t * items_written)
+stringprep_utf8_to_ucs4 (const char *str, ssize_t len, size_t *items_written)
 {
   size_t n;
 
@@ -1039,7 +1038,7 @@ stringprep_utf8_to_ucs4 (const char *str, ssize_t len, size_t * items_written)
  **/
 char *
 stringprep_ucs4_to_utf8 (const uint32_t * str, ssize_t len,
-			 size_t * items_read, size_t * items_written)
+			 size_t *items_read, size_t *items_written)
 {
   return g_ucs4_to_utf8 (str, len, (glong *) items_read,
 			 (glong *) items_written);

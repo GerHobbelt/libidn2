@@ -1,5 +1,5 @@
 /* tst_pr29.c --- Self tests for pr29_*().
- * Copyright (C) 2004-2016 Simon Josefsson
+ * Copyright (C) 2004-2020 Simon Josefsson
  *
  * This file is part of GNU Libidn.
  *
@@ -81,11 +81,11 @@ static const struct tv tv[] = {
    {0x1100, 0x00AA, 0x1161, 0},
    PR29_SUCCESS},
   {
-    /* http://lists.gnu.org/archive/html/help-libidn/2012-01/msg00008.html */
-    "Infloop",
-    3,
-    {0x1100, 0x0300, 0x4711, 0},
-    PR29_SUCCESS}
+   /* http://lists.gnu.org/archive/html/help-libidn/2012-01/msg00008.html */
+   "Infloop",
+   3,
+   {0x1100, 0x0300, 0x4711, 0},
+   PR29_SUCCESS}
 };
 
 void

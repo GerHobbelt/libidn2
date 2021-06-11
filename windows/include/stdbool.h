@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2020 Free Software Foundation, Inc.
    Written by Adam Strzelecki <ono@java.pl>
 
    This file is part of GNU Libidn.
@@ -28,13 +28,14 @@
    not, see <http://www.gnu.org/licenses/>. */
 
 #ifndef _STDBOOL_H
-#define _STDBOOL_H
+# define _STDBOOL_H
 
-#define _Bool signed char
-enum { false = 0, true = 1 };
-#define bool _Bool
-#define false 0
-#define true 1
-#define __bool_true_false_are_defined 1
+# define _Bool signed char
+enum
+{ false = 0, true = 1 };
+# define bool _Bool
+# define false 0
+# define true 1
+# define __bool_true_false_are_defined 1
 
 #endif /* _STDBOOL_H */
