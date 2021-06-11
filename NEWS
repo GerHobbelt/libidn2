@@ -1,6 +1,25 @@
 Libidn NEWS -- History of user-visible changes.                 -*- outline -*-
-Copyright (C) 2002-2018 Simon Josefsson
+Copyright (C) 2002-2020 Simon Josefsson
 See the end for copying conditions.
+
+* Version 1.36 (released 2020-07-22)
+
+** Fix unlikely memory leak in idna_to_unicode_4z4z().
+Patch from Miroslav Lichvar <mlichvar@redhat.com>.
+
+** Check codepoint validity in punycode_decode() and punycode_decode().
+Reported-by: Mike Schiffman (Farsight Security, Inc.).
+
+** tld: Add U+00EF to .nl TLD table.
+Reported by Trond Haugen <trond.haugen@norid.no>.
+
+** Indent code.
+
+** Translation fixes.
+
+** Update gnulib files.
+
+** API and ABI is backwards compatible with the previous version.
 
 * Version 1.35 (2018-05-11)
 

@@ -1,5 +1,5 @@
 /* tst_idna.c --- Self tests for idna_to_ascii().
- * Copyright (C) 2002-2016 Simon Josefsson
+ * Copyright (C) 2002-2020 Simon Josefsson
  *
  * This file is part of GNU Libidn.
  *
@@ -274,8 +274,8 @@ doit (void)
 
       if (debug)
 	{
-	  printf ("in: %s (%d==%d)\n", idna[i].out, (int) strlen (idna[i].out),
-		  (int) len);
+	  printf ("in: %s (%d==%d)\n", idna[i].out,
+		  (int) strlen (idna[i].out), (int) len);
 	  ucs4print (ucs4label, len);
 	}
 

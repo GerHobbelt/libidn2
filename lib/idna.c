@@ -1,5 +1,5 @@
 /* idna.c --- Prototypes for Internationalized Domain Name library.
-   Copyright (C) 2002-2016 Simon Josefsson
+   Copyright (C) 2002-2020 Simon Josefsson
 
    This file is part of GNU Libidn.
 
@@ -280,7 +280,7 @@ step8:
 /* ToUnicode().  May realloc() utf8in.  Will free utf8in unconditionally. */
 static int
 idna_to_unicode_internal (char *utf8in,
-			  uint32_t * out, size_t * outlen, int flags)
+			  uint32_t * out, size_t *outlen, int flags)
 {
   int rc;
   char tmpout[64];
@@ -435,7 +435,7 @@ step3:
  */
 int
 idna_to_unicode_44i (const uint32_t * in, size_t inlen,
-		     uint32_t * out, size_t * outlen, int flags)
+		     uint32_t * out, size_t *outlen, int flags)
 {
   int rc;
   size_t outlensave = *outlen;
@@ -858,7 +858,7 @@ idna_to_unicode_lzlz (const char *input, char **output, int flags)
  *   string does not equal the input.
  * @IDNA_CONTAINS_ACE_PREFIX: The input contains the ACE prefix (for
  *   ToASCII).
- * @IDNA_ICONV_ERROR: Could not convert string in locale encoding.
+ * @IDNA_ICONV_ERROR: Character encoding conversion error.
  * @IDNA_MALLOC_ERROR: Could not allocate buffer (this is typically a
  *   fatal error).
  * @IDNA_DLOPEN_ERROR: Could not dlopen the libcidn DSO (only used

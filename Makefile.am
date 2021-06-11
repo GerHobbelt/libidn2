@@ -1,5 +1,5 @@
 ## Process this file with automake to produce Makefile.in
-# Copyright (C) 2002-2016 Simon Josefsson
+# Copyright (C) 2002-2020 Simon Josefsson
 #
 # This file is part of GNU Libidn.
 #
@@ -20,15 +20,13 @@ SUBDIRS = gl lib/gl lib po src
 if ENABLE_DOC
 SUBDIRS += doc
 endif
-SUBDIRS += gltests lib/gltests fuzz tests examples
+SUBDIRS += tests fuzz gltests lib/gltests examples
 if JAVA
 SUBDIRS += java
 endif
 if CSHARP
 SUBDIRS += csharp
 endif
-
-
 
 EXTRA_DIST = cfg.mk maint.mk .clcopying
 EXTRA_DIST += COPYING.LESSERv2 COPYING.LESSERv3 COPYINGv2 COPYINGv3
@@ -56,21 +54,3 @@ EXTRA_DIST += HACKING
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libidn.pc
-
-COVERAGE_CCOPTS ?= "-g --coverage"
-COVERAGE_OUT ?= doc/coverage
-
-fuzz-coverage:
-	$(MAKE) $(AM_MAKEFLAGS) clean
-	lcov --directory . --zerocounters
-	$(MAKE) $(AM_MAKEFLAGS) CFLAGS=$(COVERAGE_CCOPTS) CXXFLAGS=$(COVERAGE_CCOPTS)
-	$(MAKE) -C fuzz $(AM_MAKEFLAGS) CFLAGS=$(COVERAGE_CCOPTS) CXXFLAGS=$(COVERAGE_CCOPTS) check
-	mkdir -p $(COVERAGE_OUT)
-	lcov --directory . --output-file $(COVERAGE_OUT)/$(PACKAGE).info --capture
-	lcov --remove $(COVERAGE_OUT)/$(PACKAGE).info '*/lib/gl/*' -o $(COVERAGE_OUT)/$(PACKAGE).info
-	genhtml --output-directory $(COVERAGE_OUT) \
-                $(COVERAGE_OUT)/$(PACKAGE).info \
-                --highlight --frames --legend \
-                --title "$(PACKAGE_NAME)"
-	@echo
-	@echo "View fuzz coverage report with 'xdg-open $(COVERAGE_OUT)/index.html'"

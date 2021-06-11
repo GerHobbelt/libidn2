@@ -1,4 +1,4 @@
-# Copyright (C) 2006-2016 Simon Josefsson
+# Copyright (C) 2006-2020 Simon Josefsson
 #
 # This file is part of GNU Libidn.
 #
@@ -17,7 +17,7 @@
 
 WFLAGS ?= --enable-gcc-warnings
 ADDFLAGS ?=
-CFGFLAGS ?= --enable-java --enable-gtk-doc --enable-gtk-doc-pdf --disable-valgrind-tests \
+CFGFLAGS ?= --enable-java --enable-gtk-doc --enable-gtk-doc-pdf \
 	$(ADDFLAGS) $(WFLAGS)
 
 ifeq ($(.DEFAULT_GOAL),abort-due-to-no-makefile)
@@ -27,17 +27,20 @@ endif
 local-checks-to-skip = sc_prohibit_strcmp sc_prohibit_have_config_h	\
 	sc_require_config_h sc_require_config_h_first			\
 	sc_prohibit_HAVE_MBRTOWC sc_program_name sc_trailing_blank	\
-	sc_GPL_version sc_immutable_NEWS
+	sc_GPL_version sc_immutable_NEWS sc_prohibit_gnu_make_extensions
 VC_LIST_ALWAYS_EXCLUDE_REGEX = \
-	^(GNUmakefile|maint.mk|gtk-doc.make|m4/pkg.m4|doc/specifications|contrib/doxygen/Doxyfile|doc/fdl-1.3.texi|csharp/libidn.*suo|(lib/)?(gl|gltests|build-aux)/)
+	^(GNUmakefile|maint.mk|gtk-doc.make|m4/pkg.m4|m4/libtool.m4|doc/specifications|contrib/doxygen/Doxyfile|doc/fdl-1.3.texi|csharp/libidn.*suo|(lib/)?(gl|gltests|build-aux)/)
 update-copyright-env = UPDATE_COPYRIGHT_HOLDER="Simon Josefsson" UPDATE_COPYRIGHT_USE_INTERVALS=1
 
 # Explicit syntax-check exceptions.
-exclude_file_name_regexp--sc_bindtextdomain = ^examples/|libc/|tests/
+exclude_file_name_regexp--sc_bindtextdomain = ^examples/|libc/|tests/|fuzz/
 exclude_file_name_regexp--sc_prohibit_atoi_atof = ^examples/example2.c$$
 exclude_file_name_regexp--sc_copyright_check = ^doc/libidn.texi
 exclude_file_name_regexp--sc_useless_cpp_parens = ^lib/nfkc.c$$
 exclude_file_name_regexp--sc_prohibit_strncpy = ^src/idn.c$$
+exclude_file_name_regexp--sc_prohibit_empty_lines_at_EOF = ^fuzz/libidn_.*fuzzer.(in|repro)/.*$$
+
+INDENT_SOURCES = -ppi 1 `find . -name '*.[ch]'|grep -v -e ^./gl/ -e ^./fuzz/ -e ^./gltests/ -e ^./lib/gl/ -e ^./lib/gltests/ -e '^./lib/\(gunibreak.h\|gunicomp.h\|gunidecomp.h\|rfc3454.c\|rfc3454.h\|tlds.c\)$$'`
 
 doc/Makefile.gdoc:
 	printf "gdoc_MANS =\ngdoc_TEXINFOS =\n" > doc/Makefile.gdoc
@@ -50,7 +53,7 @@ autoreconf: doc/Makefile.gdoc
 	rm -f gtk-doc.make
 	gtkdocize 2>/dev/null || printf "EXTRA_DIST =\nCLEANFILES =\n" >gtk-doc.make
 	autopoint
-	autoreconf --install --force
+	autoreconf --install
 
 update-po: refresh-po
 	for f in `ls po/*.po | grep -v quot.po`; do \
@@ -67,6 +70,26 @@ review-diff:
 	| grep -v -e ^index -e '^diff --git' \
 	| filterdiff -p 1 -x 'build-aux/*' -x 'gl/*' -x 'gltests/*' -x 'lib/gl/*' -x 'lib/gltests/*' -x 'po/*' -x 'maint.mk' -x '.gitignore' -x '.x-sc*' -x ChangeLog -x GNUmakefile \
 	| less
+
+# Fuzz
+
+COVERAGE_CCOPTS ?= "-g --coverage"
+COVERAGE_OUT ?= doc/coverage
+
+fuzz-coverage:
+	$(MAKE) $(AM_MAKEFLAGS) clean
+	lcov --directory . --zerocounters
+	$(MAKE) $(AM_MAKEFLAGS) CFLAGS=$(COVERAGE_CCOPTS) CXXFLAGS=$(COVERAGE_CCOPTS)
+	$(MAKE) -C fuzz $(AM_MAKEFLAGS) CFLAGS=$(COVERAGE_CCOPTS) CXXFLAGS=$(COVERAGE_CCOPTS) check
+	mkdir -p $(COVERAGE_OUT)
+	lcov --directory . --output-file $(COVERAGE_OUT)/$(PACKAGE).info --capture
+	lcov --remove $(COVERAGE_OUT)/$(PACKAGE).info '*/lib/gl/*' -o $(COVERAGE_OUT)/$(PACKAGE).info
+	genhtml --output-directory $(COVERAGE_OUT) \
+                $(COVERAGE_OUT)/$(PACKAGE).info \
+                --highlight --frames --legend \
+                --title "$(PACKAGE_NAME)"
+	@echo
+	@echo "View fuzz coverage report with 'xdg-open $(COVERAGE_OUT)/index.html'"
 
 # Release
 
