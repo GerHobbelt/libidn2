@@ -33,7 +33,7 @@
 /doc/decode.c
 /doc/example-toascii.c
 /doc/example-tounicode.c
-/doc/idn2--help.texi
+/doc/idn2-help.texi
 /doc/idn2.1
 /doc/libidn2.aux
 /doc/libidn2.cp
@@ -52,6 +52,7 @@
 /doc/libidn2.vrs
 /doc/lookup.c
 /doc/man/
+/doc/reference/gtkdoc-check.test
 /doc/reference/html-build.stamp
 /doc/reference/html.stamp
 /doc/reference/html/
@@ -79,6 +80,7 @@
 /doc/reference/libidn2-undeclared.txt
 /doc/reference/libidn2-undocumented.txt
 /doc/reference/libidn2-unused.txt
+/doc/reference/libidn2.actions
 /doc/reference/libidn2.args
 /doc/reference/libidn2.hierarchy
 /doc/reference/libidn2.interfaces

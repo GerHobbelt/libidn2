@@ -1,10 +1,21 @@
 Libidn2 NEWS -- History of user-visible changes.                -*- outline -*-
 
-* Noteworthy changes in release ?.? (????-??-??) [?]
+* Noteworthy changes in release 2.3.2 (2021-07-19) [stable]
 
 ** Upgrade TR46 tables from Unicode 11 to Unicode 13.
 Now U+32FF works.  Fixes
 <https://gitlab.com/libidn/libidn2/-/issues/77>.
+
+** Fix build errors related to doc/idn2--help.texi.
+With older makeinfo, this would manifest itself by looking for
+idn2-help.texi instead.  Further, some BSD grep implementations did
+not like the \+ regexp command, so we now rely on the (apparently)
+more portable * regexp command.  Reported-By: David Gessel.  See
+<https://gitlab.com/libidn/libidn2/-/issues/93>.
+
+** doc: Improve GTK-DOC manual.
+
+** doc: Don't ship HTML/PDF manual.  Drop custom CSS stylesheet.
 
 * Noteworthy changes in release 2.3.1 (2021-05-12) [stable]
 
