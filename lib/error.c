@@ -105,8 +105,7 @@ idn2_strerror (int rc)
 	_("domain label has character forbidden in transitional mode (TR46)");
     case IDN2_INVALID_NONTRANSITIONAL:
       return
-	_
-	("domain label has character forbidden in non-transitional mode (TR46)");
+	_("domain label has character forbidden in non-transitional mode (TR46)");
     case IDN2_ALABEL_ROUNDTRIP_FAILED:
       return _("A-label roundtrip failed");
     default:
