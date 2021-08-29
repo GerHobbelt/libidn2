@@ -21,8 +21,12 @@
 #include <stdlib.h>		/* free */
 #include <idn2.h>		/* idn2_register_ul, IDN2_OK, idn2_strerror, idn2_strerror_name */
 
-int
-main (int argc, char *argv[])
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      idn_example_register_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
 {
   int rc;
   char src[BUFSIZ];

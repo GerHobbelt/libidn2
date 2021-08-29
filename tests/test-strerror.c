@@ -19,8 +19,13 @@
 
 #include <idn2.h>
 
-int G_GNUC_IDN2_ATTRIBUTE_CONST
-main (void)
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      idn_test_strerror_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
 {
   int i, failed = 0;
 

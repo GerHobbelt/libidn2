@@ -270,8 +270,13 @@ static const char *const locale_candidates[] = {
   NULL
 };
 
-int
-main (void)
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      idn_test_glibc_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
 {
   bool utf8_seen = false;
   bool latin1_seen = false;

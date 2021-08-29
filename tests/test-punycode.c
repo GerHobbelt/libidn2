@@ -199,8 +199,13 @@ ucs4print (const uint32_t * str, size_t len)
 
 #include "punycode.h"
 
-int
-main (void)
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      idn_test_punycode_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
 {
   char *p;
   uint32_t *q;

@@ -1376,8 +1376,13 @@ test_unicode_range (void)
     }
 }
 
-int
-main (int argc, const char *argv[])
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      idn_test_lookup_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
 {
   separator ();
   puts ("                                          IDNA2008 Lookup\n");

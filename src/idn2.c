@@ -185,8 +185,13 @@ process_input (char *readbuf, int flags)
     error (EXIT_FAILURE, 0, "%s: %s", tag, idn2_strerror (rc));
 }
 
-int
-main (int argc, char *argv[])
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      idn_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
 {
   unsigned cmdn;
   int flags = IDN2_NONTRANSITIONAL;

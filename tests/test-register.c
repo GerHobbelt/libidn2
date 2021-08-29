@@ -120,8 +120,13 @@ _GL_ATTRIBUTE_FORMAT_PRINTF_STANDARD (1, 2)
     exit (EXIT_FAILURE);
 }
 
-int
-main (void)
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      idn_test_register_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
 {
   uint8_t *out;
   unsigned i;

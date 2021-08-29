@@ -20,8 +20,11 @@
  *
  */
 
-int
-main (void)
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      idn_example_to_unicode_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
 {
   char buf[BUFSIZ];
   char *p;

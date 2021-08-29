@@ -384,8 +384,13 @@ _check_4z (const test_t * t, int rc, uint32_t * ucs4, const char *funcname)
   free (ucs4);
 }
 
-int
-main (void)
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      idn_test_to_unicode_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
 {
   static uint32_t abc_u32[] = { 'a', 'b', 'c', 0 };
   static uint32_t xntda_u32[] = { 'x', 'n', '-', '-', 't', 'd', 'a', 0 };
